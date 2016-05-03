@@ -3,7 +3,7 @@ define(function(require, exports, module) {
         "PreferencePanel", "settings", "ui", "util", "Form", "ext", "c9",
         "dialog.alert", "dialog.confirm", "layout", "proc", "menus", "commands",
         "dialog.error", "dialog.info", "tree.favorites", "fs", "tree", "plugin.debug",
-        "preferences.experimental", "Plugin","Dialog","Form"
+        "preferences.experimental", "Plugin","Dialog","Form","Panel","tabManager","panels"
     ];
     main.provides = ["maple.manager"];
     return main;
@@ -24,12 +24,12 @@ define(function(require, exports, module) {
         var util = imports.util;
         var Dialog = imports.Dialog;
         var Form = imports.Form;
-
+        var Panel = imports.Panel;
+        var tabManager = imports.tabManager;
+        var panels = imports.panels;
         // var qs = require("querystring");
         // var alert = imports["dialog.alert"].show;
-
         var favs = imports["tree.favorites"];
-
         var join = require("path").join;
         var basename = require("path").basename;
         var dirname = require("path").dirname;
@@ -82,11 +82,7 @@ define(function(require, exports, module) {
         }
 
         function createMapleApp(template){
-
-            // var url = staticPrefix + "/" + join("templates", template);
-            // if (!url.match(/^http/))
-            //     url = location.origin + url;
-
+/***********using dialog to set the project name**************/
             var authform;
             authform = new Form({
                 rowheight: 30,
@@ -132,13 +128,18 @@ define(function(require, exports, module) {
                             setProjectName(projectname);
                             alert(projectname);
                             dialog.hide();
+                            // alert("breakpoint0!!");
+                            // tree.select(mapleDirAbsolute);
                             // alert("breakpoint1!!");
-                            // tree.refresh();
+                            // tree.scrollToSelection();
                             // alert("breakpoint2!!");
-                            // tree.expandAndSelect("c9_workspace" + projectname);
+                            // next();
                             // alert("breakpoint3!!");
-                            // tree.expandAndSelect(mapleDirAbsolute);
+                            // tree.focus();
                             // alert("breakpoint4!!");
+                            // tree.expandAndSelect(mapleDir,"main.java");
+                            // alert("breakpoint5!!");
+
                         }
                     }
                 ]
@@ -147,18 +148,10 @@ define(function(require, exports, module) {
                 authform.attachTo(e.html);
             });
             dialog.show();
-            tree.expandAndSelect("c9_workspace" + projectname);
-            alert("breakpoint!!");
-
-            // diadog.on("show", function(){
-            //     alert("breakpoint1!!!");
-            //     authform.reset();
-            //     alert("breakpoint2!!!");
-            // });
             function setProjectName(name){
                 var pathAbsolute = "~/"+".c9/plugins/maple/templates/template1.0/";
                 alert(pathAbsolute);
-                var mapleDir = "/" + name + "/"/**"/maple_example/"**/;
+                var mapleDir = "/" + name + "/";
                 var mapleDirAbsolute = c9.workspaceDir + mapleDir;
                 alert(pathAbsolute);
                 alert("ready to mkdir: " + mapleDir);
@@ -168,7 +161,6 @@ define(function(require, exports, module) {
                         alert("ready to copy, from: " + pathAbsolute + " ; to: " + mapleDirAbsolute);
                     proc.spawn("bash", {
                         args: ["-c", [
-                        //"cp", "-r", util.escapeShell(pathAbsolute), util.escapeShell(mapleDirAbsolute)
                             "cp", "-r", util.escapeShell(pathAbsolute), util.escapeShell(mapleDirAbsolute)
                         ].join(" ")
                     ]
@@ -181,27 +173,8 @@ define(function(require, exports, module) {
                 });
             });
           }
-
-//             // fs.exists(path, function (exists) {
-//             //     alert (exists);
-//             //     if (exists) {
-//                     //favs.addFavorite(dirname(mapleDir), "maple_example");
-//                     /** show all the files of maple_example in Favorites**/
-//                     //favs.addFavorite(mapleDir);
-//                     //tree.expand(mapleDir, function() {
-//                         //alert("call expand");
-//                         //favs.addFavorite(mapleDir);
-//                         // tree.select(/**Favorites path**/);
-//                         // tree.select(favs.addFavorite(mapleDir)); // path || "/");
-//                         // tree.scrollToSelection();
-//                         //next();
-//                     //}
-//                     //);
-//                     //tree.focus();
-//                     //tree.expandAndSelect(mapleDir,"main.java"/**initial file**/);
-//                 //}
-//             //});
         }
+
 
         plugin.on("load", function(){
             // Any custom load code (most things are cleaned up automatically)

@@ -15,7 +15,8 @@
   },
   "plugins": {
     "maple": {},
-    "maple.manager": {}
+    "maple.manager": {},
+    "panelView":{}
   },
   "categories": ["miscellaneous"],
   "licenses": []

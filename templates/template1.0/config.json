@@ -1,0 +1,5 @@
+{
+	"controllerType": "OpenDaylight",
+	"controllerIPAddress": "localhost",
+	"controllerPort": "10000"
+}

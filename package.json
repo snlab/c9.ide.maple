@@ -1,0 +1,30 @@
+{
+  "name": "maple",
+  "description": "Maple Application Programming Support",
+  "version": "0.1.0",
+  "author": "Jensen",
+  "contributors": [
+    {
+      "name": "Jensen",
+      "email": "jingxuan.n.zhang@gmail.com"
+    },
+    {
+      "name": "May",
+      "email": "whr_hr_r@163.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/snlab/c9.maple.git"
+  },
+  "plugins": {
+    "maple": { "staticPrefix": "/vfs/0/plugins/token/maple" },
+    "maple.manager": {}
+  },
+  "categories": [
+    "miscellaneous"
+  ],
+  "licenses": [
+    "MIT"
+  ]
+}

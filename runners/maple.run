@@ -1,0 +1,10 @@
+{
+    "script": [
+        "MAVEN_OPTS=\"-Xmx1048m -XX:MaxPermSize=512m\"",
+        "cd $file_path",
+        "mvn clean package"
+    ],
+    "default": true,
+    "selector": "pom.xml",
+    "env": {}
+}

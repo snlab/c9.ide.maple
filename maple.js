@@ -25,7 +25,8 @@ define(function(require, exports, module) {
     var staticPrefix = options.staticPrefix;
 
     var TEMPLATES = {
-      "mapleapp.v1": "Maple App Template 1.0"
+      "mapleapp.v1": "Maple App Template 1.0",
+      "magellan-dataflow-example": "Magellan Data Flow Analysis Example"
     };
 
     /***** Initialization *****/

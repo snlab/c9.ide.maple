@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mkdir classes
+javac -d classes -classpath 'lib/mapleclient-0.0.1-SNAPSHOT.jar:.' ./SimpleApp.java
+java -cp 'lib/mapleclient-0.0.1-SNAPSHOT.jar:classes/' SimpleApp

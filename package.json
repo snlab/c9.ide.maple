@@ -16,7 +16,9 @@
   "plugins": {
     "maple": {},
     "maple.manager": {},
-    "panelView":{}
+    "panelNetwork":{},
+    "panelTracetree":{},
+    "panelTesting":{}
   },
   "categories": ["miscellaneous"],
   "licenses": []

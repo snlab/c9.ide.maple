@@ -1,5 +1,5 @@
 define(function(require, exports, module) {
-  main.consumes = ["Plugin", "net", "menus", "ui", "commands", "terminal", "Dialog", "c9", "dialog.error", "proc", "util", "fs", "console"];
+  main.consumes = ["Plugin", "net", "menus", "ui", "commands", "terminal", "Dialog", "c9", "dialog.error", "proc", "util", "fs", "console", "tabManager"];
   main.provides = ["maple"];
   return main;
 
@@ -16,6 +16,7 @@ define(function(require, exports, module) {
     var util = imports.util;
     var fs = imports.fs;
     var console = imports.console;
+    var tabManager = imports.tabManager;
     // var ssh2 = require("./lib/ssh2.js");
 
     var join = require("path").join;
@@ -45,6 +46,24 @@ define(function(require, exports, module) {
       commands.exec("openpreferences", null, {
         panel: "maple.manager",
         section: "Topology Manager"
+      });
+    }
+
+    function connect_to_mininet() {
+      tabManager.open({
+        editorType: "terminal",
+        pane: console.getPanes()[0],
+        active: true,
+        focus: true,
+        document: {
+          title: "Mininet",
+          tooltip: "Mininet"
+        }
+      }, function(err, tab) {
+        if (err) throw err;
+
+        var terminal = tab.editor;
+        terminal.write("sudo mn\n");
       });
     }
 
@@ -99,8 +118,8 @@ define(function(require, exports, module) {
         }), 230, plugin);
       });
       // menus.setRootMenu("Maple", 1000, plugin);
-      menus.addItemByPath("Tools/Test SSH", new ui.item({
-        command: "ssh_test_connection"
+      menus.addItemByPath("Tools/Test Mininet", new ui.item({
+        command: "connect_to_mininet"
       }), 300, plugin);
       menus.addItemByPath("Tools/Maple", null, 400, plugin);
       menus.addItemByPath("Tools/Maple/Controller Manager", new ui.item({
@@ -121,6 +140,11 @@ define(function(require, exports, module) {
         {
           name: "mininet_manager",
           exec: mininet_manager
+        },
+        {
+          name: "connect_to_mininet",
+          group: "Maple",
+          exec: connect_to_mininet
         }
       ], plugin);
     }

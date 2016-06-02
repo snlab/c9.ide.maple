@@ -2,7 +2,7 @@
     "script": [
         "MAVEN_OPTS=\"-Xmx1048m -XX:MaxPermSize=512m\"",
         "cd $file_path",
-        "mvn clean package"
+        "mvn clean package -DskipTests"
     ],
     "default": true,
     "selector": "pom.xml",

@@ -365,12 +365,9 @@ define(function(require, exports, module) {
         if (err) throw err;
 
         var terminal = tab.editor;
-        terminal.write("sshpass -p" + ctrl_passwd + " ssh -oHostKeyAlgorithms=+ssh-dss " + ctrl_login + "@" + ctrl_ip + " -p " + ctrl_port + "\n");
+        terminal.write("sshpass -p" + ctrl_passwd + " ssh -oStrictHostKeyChecking=no " + ctrl_login + "@" + ctrl_ip + " -p " + ctrl_port + "\n");
 
         bindController(tab.name, controller.id);
-        tab.on("close", function(e) {
-          unbindController(controller.id);
-        });
       });
     }
 
@@ -431,7 +428,8 @@ define(function(require, exports, module) {
 
     function unbindController(ctrl_id) {
       var ctrl_list = settings.getJson("project/maple/controllers") || {};
-      delete ctrl_list[ctrl_id].tab;
+
+      ctrl_list[ctrl_id].tab && delete ctrl_list[ctrl_id].tab;
       ctrl_list[ctrl_id].status = "Unknown";
       settings.setJson("project/maple/controllers", ctrl_list);
       reloadCtrlModel();
@@ -498,7 +496,7 @@ define(function(require, exports, module) {
           var ext = path.split(".").pop();
           if (ext === "jar") {
             deployMapleAppFromBundle(controller, path);
-          } else if (path === "kar") {
+          } else if (ext === "kar") {
             deployMapleAppFromKar(controller, path);
           }
           fileDialog.hide();
@@ -512,16 +510,33 @@ define(function(require, exports, module) {
     }
 
     function deployMapleAppFromBundle(controller, path) {
-      // TODO: deploy mapleapp.jar
-      alert(vfs.url(path) + "\nid: " + controller.id + "\ntab: " + controller.tab);
+      // Deploy mapleapp.jar
+      // alert(vfs.url(path) + "\nid: " + controller.id + "\ntab: " + controller.tab);
+      tabManager.getTabs().filter(function(t) {
+        return t.name === controller.tab;
+      }).forEach(function(tab) {
+        tab.editor.write("bundle:install " + vfs.url(path) + "\n");
+      });
     }
 
     function deployMapleAppFromKar(controller, path) {
-      // TODO: deploy mapleapp.kar
-      alert(vfs.url(path) + "\nid: " + controller.id + "\ntab: " + controller.tab);
+      // Deploy mapleapp.kar
+      // alert(vfs.url(path) + "\nid: " + controller.id + "\ntab: " + controller.tab);
+      tabManager.getTabs().filter(function(t) {
+        return t.name === controller.tab;
+      }).forEach(function(tab) {
+        tab.editor.write("kar:install " + vfs.url(path) + "\n");
+      });
     }
 
     /***** Lifecycle *****/
+
+    tabManager.on("tabAfterClose", function(e) {
+      var ctrl_list = settings.getJson("project/maple/controllers") || {};
+      for (var c in ctrl_list) {
+        ctrl_list[c].tab && ctrl_list[c].tab === e.tab.name && unbindController(ctrl_list[c].id);
+      }
+    });
 
     settings.on("read", function() {
       settings.setDefaults("project/maple/controllers", []);

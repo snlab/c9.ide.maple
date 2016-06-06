@@ -1,5 +1,7 @@
+var insertTopology;
+
 define(function(require, exports, module) {
-  main.consumes = ["PreferencePanel", "menus", "ui", "commands", "layout", "settings", "Dialog", "Form", "dialog.file", "fs", "vfs", "tabManager", "console"];
+  main.consumes = ["PreferencePanel", "menus", "ui", "commands", "layout", "settings", "Dialog", "Form", "dialog.file", "fs", "vfs", "tabManager", "console", "Datagrid"];
   main.provides = ["maple.manager"];
   return main;
 
@@ -16,6 +18,7 @@ define(function(require, exports, module) {
     var vfs = imports.vfs;
     var tabManager = imports.tabManager;
     var console = imports.console;
+    var Datagrid = imports.Datagrid;
 
     var Tree = require("ace_tree/tree");
     var TreeData = require("./mapledp");
@@ -23,6 +26,8 @@ define(function(require, exports, module) {
 
     var cdatagrid, tdatagrid, ccontainer, tcontainer, intro;
     var ctrlModel, ctrlform, topoModel;
+    var selTopoDialog, scontainer, topoDatagrid;
+    var currentCtrl;
 
     /***** Initialization *****/
 
@@ -37,6 +42,15 @@ define(function(require, exports, module) {
       allowClose: true,
       modal: true,
       title: "Add Controller"
+    });
+
+    var selTopoDialog = new Dialog("snlab.org", main.consumes, {
+      name: "sel-topo-dialog",
+      allowClose: true,
+      modal: true,
+      title: "Select Mininet Topology",
+      element: [
+      ]
     });
 
     var loaded = false;
@@ -70,6 +84,16 @@ define(function(require, exports, module) {
           name: "select_maple_app",
           group: "Maple",
           exec: selectMapleApp
+        },
+        {
+          name: "select_mininet_topology",
+          group: "Maple",
+          exec: selectMininetTopology
+        },
+        {
+          name: "connect_with_mininet",
+          group: "Maple",
+          exec: connectWithMininet
         }
       ], plugin);
 
@@ -254,7 +278,7 @@ define(function(require, exports, module) {
         var nodes = tdatagrid.selection.getSelectedNodes();
         nodes.forEach(function (node) {
           removeTopology(node.name);
-          reloadCtrlModel();
+          reloadTopoModel();
         });
       });
 
@@ -303,6 +327,15 @@ define(function(require, exports, module) {
             onclick: function() {
               var item = cdatagrid.selection.getCursor();
               commands.exec("select_maple_app", item);
+            }
+          }),
+          new ui.button({
+            caption: "Connect with Mininet",
+            skin: "btn-default-css3",
+            class: "dark",
+            onclick: function() {
+              var item = cdatagrid.selection.getCursor();
+              commands.exec("select_mininet_topology", item);
             }
           })
         ]
@@ -429,8 +462,10 @@ define(function(require, exports, module) {
     function unbindController(ctrl_id) {
       var ctrl_list = settings.getJson("project/maple/controllers") || {};
 
-      ctrl_list[ctrl_id].tab && delete ctrl_list[ctrl_id].tab;
-      ctrl_list[ctrl_id].status = "Unknown";
+      if (ctrl_list[ctrl_id]) {
+        ctrl_list[ctrl_id].tab && delete ctrl_list[ctrl_id].tab;
+        ctrl_list[ctrl_id].status = "Unknown";
+      }
       settings.setJson("project/maple/controllers", ctrl_list);
       reloadCtrlModel();
     }
@@ -444,6 +479,7 @@ define(function(require, exports, module) {
       }).sort();
 
       topoModel.setRoot({children : nodes});
+      topoDatagrid && topoDatagrid.setRoot(nodes);
     }
 
     function importTopology() {
@@ -473,20 +509,19 @@ define(function(require, exports, module) {
       settings.setJson("project/maple/topologies", topo_list);
     }
 
-    function insertTopology(topology) {
-      if (topology.name) {
-        var topo_list = settings.getJson("project/maple/topologies") || {};
-        topology.switch_num = topology.nodes.filter(function(node) {
-          return node.type === "switch";
-        }).length;
-        topology.host_num = topology.nodes.filter(function(node) {
-          return node.type === "host";
-        }).length;
-        topology.link_num = topology.links.length;
-        topo_list[topology.name] = topology;
-        settings.setJson("project/maple/topologies", topo_list);
-      }
-    }
+    insertTopology = function(topology) {
+      var topo_list = settings.getJson("project/maple/topologies") || {};
+      topology.name = topology.name || "mininet-" + new Date().toString();
+      topology.switch_num = topology.nodes.filter(function(node) {
+        return node.class === "circleSClass";
+      }).length;
+      topology.host_num = topology.nodes.filter(function(node) {
+        return node.class === "circleHClass";
+      }).length;
+      topology.link_num = topology.edges.length;
+      topo_list[topology.name] = topology;
+      settings.setJson("project/maple/topologies", topo_list);
+    };
 
     function selectMapleApp(controller) {
       fileDialog.show("Select a bundle or kar", "", function(path, stat, done) {
@@ -506,6 +541,34 @@ define(function(require, exports, module) {
         shohwFilesCheckbox: true,
         hideFileInput: false,
         chooseCaption: "Import"
+      });
+    }
+
+    function selectMininetTopology(controller) {
+      currentCtrl = controller;
+      selTopoDialog.show();
+    }
+
+    function connectWithMininet(topology) {
+      var controller_ip = currentCtrl.ip;
+      var topologyData = JSON.stringify({
+        nodes: topology.nodes || [],
+        edges: topology.edges || []
+      });
+      tabManager.open({
+        editorType: "terminal",
+        pane: console.getPanes()[0],
+        active: true,
+        focus: true,
+        document: {
+          title: "Mininet",
+          tooltip: "Mininet - " + topology.name
+        }
+      }, function(err, tab) {
+        if (err) throw err;
+
+        var terminal = tab.editor;
+        terminal.write("sudo mininetSim " + controller_ip + "'" + topologyData + "'" + "\n");
       });
     }
 
@@ -605,6 +668,60 @@ define(function(require, exports, module) {
 
     addCtrlDialog.on("show", function() {
       ctrlform.reset();
+    });
+
+    selTopoDialog.on("draw", function(e) {
+
+      var scontainer = e.html.appendChild(document.createElement("div"));
+      var sdiv = scontainer.appendChild(document.createElement("div"));
+      sdiv.style.width = "100%";
+      sdiv.style.height = "auto";
+      sdiv.style.marginBottom = "50px";
+
+      new ui.hbox({
+        htmlNode: sdiv.parentNode,
+        style: "position:absolute;bottom:10px",
+        padding: 5,
+        childNodes: [
+          new ui.button({
+            caption: "Connect",
+            skin: "btn-default-css3",
+            class: "btn-green",
+            onclick: function() {
+              var item = topoDatagrid.selection.getCursor();
+              commands.exec("connect_with_mininet", item);
+            }
+          })
+        ]
+      });
+
+      topoDatagrid = new Datagrid({
+        container: sdiv,
+
+        columns: [{
+          caption: "Topology Name",
+          value: "name",
+          width: "150"
+        }, {
+          caption: "Switch Number",
+          value: "switch_num",
+          width: "100"
+        }, {
+          caption: "Host Number",
+          value: "host_num",
+          width: "100"
+        }, {
+          caption: "Link Number",
+          value: "link_num",
+          width: "100"
+        }],
+
+        getClassName: function(node) {
+          return !node.optional ? "required" : "";
+        }
+      }, plugin);
+
+      reloadTopoModel();
     });
 
     plugin.on("load", function() {

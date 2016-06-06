@@ -690,6 +690,7 @@ define(function(require, exports, module) {
             onclick: function() {
               var item = topoDatagrid.selection.getCursor();
               commands.exec("connect_with_mininet", item);
+              selTopoDialog.hide();
             }
           })
         ]

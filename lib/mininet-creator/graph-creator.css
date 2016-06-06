@@ -57,6 +57,17 @@ marker{
     fill: #333;
 }
 
+g.conceptS circle{
+    fill: #F6FBFF;
+    stroke: #333;
+    stroke-width: 2px;
+}
+g.conceptH circle{
+    fill: #FFCC00;
+    stroke: #333;
+    stroke-width: 2px;
+}
+
 g.conceptG circle{
     fill: #F6FBFF;
     stroke: #333;

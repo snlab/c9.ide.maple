@@ -22,7 +22,8 @@
     "maple.manager": {},
     "magellan": {},
     "panelMininet": {},
-    "panelNetwork": {}
+    "panelNetwork": {},
+    "panelTracetree": {}
   },
   "categories": [
     "miscellaneous"

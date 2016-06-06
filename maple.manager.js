@@ -568,7 +568,7 @@ define(function(require, exports, module) {
         if (err) throw err;
 
         var terminal = tab.editor;
-        terminal.write("sudo mininetSim " + controller_ip + "'" + topologyData + "'" + "\n");
+        terminal.write("sudo mininetSim " + controller_ip + " '" + topologyData + "'" + "\n");
       });
     }
 

@@ -23,7 +23,7 @@ define(function(require, exports, module) {
     /***** Lifecycle *****/
 
     panelNetwork.on("draw", function(e) {
-      e.html.innerHTML = '<iframe src="https://sdnlab.hep.caltech.edu/" style="width:100%;height:100%;border:0px"></iframe>';
+      e.html.innerHTML = '<iframe src="https://sdnlab.hep.caltech.edu/" style="width:100%;height:100%;border:0px"></iframe><a href="https://sdnlab.hep.caltech.edu/" target="_blank" style="background-color:skyblue;color:blue;margin:0 5px;padding:5px;text-decoration:none;font-size:20px;position:absolute;bottom:0;right:0;">Fullscreen</a>';
     });
 
     panelNetwork.on("load", function() {
